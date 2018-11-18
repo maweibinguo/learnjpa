@@ -8,7 +8,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @RestController
 @RequestMapping("/user")
@@ -51,11 +56,37 @@ public class UserController {
         this.userRepository.save(user);
     }
 
-    @GetMapping("getbypage")
-    public Page<User> getUserByPage() {
+    @GetMapping("/getbypage")
+    public Page<User> getUserByPage(@RequestParam("pageNumber") int pageNumber, @RequestParam("pageSize") int pageSize, @RequestParam("sortMethod") String sortMethod) {
+        pageNumber = pageNumber > 0 ? pageNumber : 1;
+        pageSize = pageSize > 0 && pageSize < 20 ? pageSize : 10;
+
+        Sort.Direction sortForPage;
+        switch (Sort.Direction.valueOf(sortMethod.toUpperCase())) {
+            case DESC:
+                sortForPage = DESC;
+                break;
+            case ASC:
+                sortForPage = ASC;
+                break;
+            default:
+                sortForPage = DESC;
+                break;
+        }
+
         Page<User> userList = this.userPagingAndSortingRepository.findAll(
-                PageRequest.of(1, 5, Sort.by(Sort.Direction.DESC, "id"))
+                PageRequest.of(pageNumber, pageSize, Sort.by(sortForPage, "id"))
         );
         return userList;
+    }
+
+    @GetMapping("/getbynameorid")
+    public List<User> getPageByNameOrId(@RequestParam("name") String name, @RequestParam("id") Long id) {
+        return this.userRepository.findByNameOrId(name.trim(), id);
+    }
+
+    @GetMapping("/getbynameandid")
+    public List<User> getPageByNameAndId(@RequestParam("name") String name, @RequestParam("id") Long id) {
+        return this.userRepository.findByNameAndId(name.trim(), id);
     }
 }
