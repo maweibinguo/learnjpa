@@ -11,7 +11,10 @@ import java.util.HashMap;
 public class MyExceptionHandler {
     @ExceptionHandler(Exception.class)
     public HashMap hanle(Exception e) {
-        HashMap<String, String> hashMap = new HashMap<>();
+        StackTraceElement stackTraceElement = e.getStackTrace()[0];
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("file", stackTraceElement.getFileName());
+        hashMap.put("line", stackTraceElement.getLineNumber());
         hashMap.put("message", e.getMessage());
         return hashMap;
     }
